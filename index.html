@@ -323,7 +323,7 @@
         animation: shaky 300ms var(--p5-ease);
       }
 
-      .story {
+      .info-text {
         margin-top: 14px;
         font-size: clamp(20px, 1.8vw, 30px);
         line-height: 1.35;
@@ -663,26 +663,7 @@
         <b>PRO</b><span>JECTS</span>
       </div>
       <div class="slots">
-        <div class="slot hoverable">
-          <div class="num">01</div>
-          <div class="name">PROJECT NAME</div>
-          <div class="time">00/00/0000 00:00</div>
-        </div>
-        <div class="slot hoverable">
-          <div class="num">02</div>
-          <div class="name">PROJECT NAME</div>
-          <div class="time">00/00/0000 00:00</div>
-        </div>
-        <div class="slot hoverable">
-          <div class="num">03</div>
-          <div class="name">PROJECT NAME</div>
-          <div class="time">00/00/0000 00:00</div>
-        </div>
-        <div class="slot hoverable">
-          <div class="num">04</div>
-          <div class="name">PROJECT NAME</div>
-          <div class="time">00/00/0000 00:00</div>
-        </div>
+        <!-- Dynamic content will be injected here -->
       </div>
       <button class="back-btn hoverable" data-back="hub">
         <i>&gt;</i><span>&larr; BACK</span>
@@ -697,11 +678,11 @@
           <span class="sns-icon hoverable" aria-hidden="true"></span
           ><span class="sns-icon hoverable" aria-hidden="true"></span>
         </div>
-        <h2>STORY</h2>
-        <div class="story">
-          [YOUR STORY HERE - replace this text]<br />[YOUR STORY HERE - replace
-          this text]<br />[YOUR STORY HERE - replace this text]<br />[YOUR STORY
-          HERE - replace this text]<br />[YOUR STORY HERE - replace this text]
+        <h2>INFO</h2>
+        <div class="info-text">
+          HELLO! I'm Wimmboo. I LOVE AI and vibecoding<br>
+          I also like playing story games. I used to play competitive game like Valorant but not anymore, I quit.<br>
+          idk wht else to say here sooo BYEEEE
         </div>
       </div>
       <button class="back-btn hoverable" data-back="hub">
@@ -729,12 +710,58 @@
       const githubCard = document.getElementById("githubCard");
       const infoCard = document.getElementById("infoCard");
       const projectsTitle = document.getElementById("projectsTitle");
-      const projectSlots = [...document.querySelectorAll(".slot")];
+      let projectSlots = [];
       const projectsScreen = document.getElementById("screen-projects");
       let activeProjectIndex = 0;
       let wheelLockUntil = 0;
 
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      function formatDate(isoString) {
+        const date = new Date(isoString);
+        const d = String(date.getDate()).padStart(2, "0");
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const y = date.getFullYear();
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        return `${d}/${m}/${y} ${hh}:${mm}`;
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch(
+            "https://api.github.com/users/Wimmboo2/repos?sort=updated&direction=desc",
+          );
+          const repos = await response.json();
+          const slotsContainer = document.querySelector(".slots");
+          if (!slotsContainer) return;
+          slotsContainer.innerHTML = "";
+
+          repos.slice(0, 4).forEach((repo, index) => {
+            const num = String(index + 1).padStart(2, "0");
+            const dateStr = formatDate(repo.updated_at);
+            const slot = document.createElement("div");
+            slot.className = "slot hoverable";
+            slot.innerHTML = `
+              <div class="num">${num}</div>
+              <div class="name">${repo.name.toUpperCase()}</div>
+              <div class="time">${dateStr}</div>
+            `;
+            slot.addEventListener("click", () =>
+              window.open(repo.html_url, "_blank"),
+            );
+            slot.addEventListener("mouseenter", () => {
+              if (!screens.projects.classList.contains("active")) return;
+              setProjectFocus(index);
+            });
+            slotsContainer.appendChild(slot);
+          });
+
+          projectSlots = [...document.querySelectorAll(".slot")];
+        } catch (e) {
+          console.error("Failed to load projects", e);
+        }
+      }
 
       function setActiveScreen(name) {
         Object.values(screens).forEach((screen) =>
@@ -923,17 +950,9 @@
         { passive: false },
       );
 
-      projectSlots.forEach((slot, index) => {
-        slot.addEventListener("mouseenter", () => {
-          if (!screens.projects.classList.contains("active")) return;
-          setProjectFocus(index);
-        });
-        slot.addEventListener("click", () => {
-          if (!screens.projects.classList.contains("active")) return;
-          setProjectFocus(index);
-        });
-      });
+      // projectSlots click and mouseenter listeners are now handled in loadProjects
 
+      loadProjects();
       enterHub();
     </script>
   </body>
