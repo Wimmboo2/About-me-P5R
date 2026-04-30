@@ -106,7 +106,7 @@
 
       .logo {
         position: absolute;
-        top: 1.2%;
+        top: 4%;
         left: 4%;
         z-index: 22;
         width: min(450px, 34vw);
@@ -153,7 +153,7 @@
 
       .hub-menu {
         position: absolute;
-        top: 31%;
+        top: 35%;
         left: 5%;
         display: grid;
         gap: 16px;
@@ -926,7 +926,7 @@
         item.addEventListener("click", async () => {
           const go = item.dataset.go;
           if (go === "github") await transitionTo("github", "diag-up");
-          if (go === "projects") await transitionTo("projects", "jagged");
+          if (go === "projects") await transitionTo("projects", "diag-up");
           if (go === "info") await transitionTo("info", "diag-up");
         });
       });
