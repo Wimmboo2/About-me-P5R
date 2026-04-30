@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Persona 5 Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --p5-red: #d10000;
+        --p5-red-figure: #cc0000;
+        --p5-black: #0a0a0a;
+        --p5-white: #f0f0f0;
+        --p5-panel: #1a1a1a;
+        --p5-ease: cubic-bezier(0.77, 0, 0.18, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        cursor: none !important;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--p5-black);
+        color: var(--p5-white);
+        font-family: "Rajdhani", sans-serif;
+      }
+
+      #cursor {
+        position: fixed;
+        width: 14px;
+        height: 14px;
+        background: var(--p5-white);
+        transform: translate(-50%, -50%) rotate(45deg);
+        pointer-events: none;
+        z-index: 200;
+        transition:
+          transform 180ms var(--p5-ease),
+          background-color 180ms var(--p5-ease),
+          box-shadow 180ms var(--p5-ease);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+      }
+
+      #cursor.hover {
+        background: var(--p5-red);
+        transform: translate(-50%, -50%) rotate(45deg) scale(1.7);
+        box-shadow: 0 0 16px rgba(209, 0, 0, 0.85);
+      }
+
+      .screen {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(1.02);
+        transition:
+          opacity 360ms var(--p5-ease),
+          transform 500ms var(--p5-ease);
+        will-change: opacity, transform;
+      }
+
+      .screen.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: scale(1);
+      }
+
+      .bg-black {
+        background: #000;
+      }
+      .bg-red {
+        background: var(--p5-red);
+      }
+
+      #flash {
+        position: fixed;
+        inset: 0;
+        z-index: 150;
+        pointer-events: none;
+        background: #fff;
+        opacity: 0;
+      }
+
+      #transitionMask {
+        position: fixed;
+        inset: 0;
+        z-index: 149;
+        pointer-events: none;
+        background: var(--p5-black);
+        opacity: 0;
+      }
+
+      .hub {
+        overflow: hidden;
+        background: transparent;
+      }
+
+      #bg-video {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        pointer-events: none;
+        filter: saturate(0.9) brightness(0.35) contrast(1.1);
+        will-change: transform;
+      }
+
+      .hub-overlay {
+        display: none;
+      }
+
+      .logo {
+        position: absolute;
+        top: 1.2%;
+        left: 4%;
+        z-index: 22;
+        width: min(450px, 34vw);
+        opacity: 0;
+        transform: translateX(-100%) translateY(-18%) rotate(-7deg);
+      }
+
+      .logo.in {
+        animation: logoSlam 350ms var(--p5-ease) forwards;
+      }
+
+      .logo-stack {
+        position: relative;
+        animation: logoFloat 4s var(--p5-ease) infinite;
+      }
+
+      .logo-bar {
+        display: none;
+      }
+
+      .logo .about,
+      .logo .me {
+        position: relative;
+        display: block;
+        font-family: "Bebas Neue", sans-serif;
+        font-weight: 400;
+        color: var(--p5-white);
+        line-height: 0.8;
+        letter-spacing: 2px;
+        text-shadow:
+          0 0 2px rgba(0, 0, 0, 0.75),
+          3px 3px 0 rgba(0, 0, 0, 0.28);
+      }
+
+      .logo .about {
+        font-size: clamp(118px, 11vw, 176px);
+      }
+
+      .logo .me {
+        font-size: clamp(116px, 10vw, 170px);
+        margin-top: -12px;
+        margin-left: 48px;
+      }
+
+      .hub-menu {
+        position: absolute;
+        top: 31%;
+        left: 5%;
+        display: grid;
+        gap: 16px;
+        z-index: 22;
+        width: 39vw;
+        min-width: 360px;
+      }
+
+      .menu-item {
+        position: relative;
+        border: none;
+        background: var(--p5-white);
+        color: #000;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(32px, 3.3vw, 52px);
+        letter-spacing: 2px;
+        text-align: left;
+        padding: 18px 34px 16px 56px;
+        margin-left: 0;
+        clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+        transform: translateX(-120%);
+        transform-origin: left center;
+        opacity: 0;
+        transition:
+          transform 240ms var(--p5-ease),
+          color 200ms var(--p5-ease),
+          background-color 200ms var(--p5-ease),
+          box-shadow 220ms var(--p5-ease);
+      }
+
+      .menu-item:nth-child(1) {
+        width: min(520px, 34vw);
+      }
+      .menu-item:nth-child(2) {
+        width: min(500px, 33vw);
+      }
+      .menu-item:nth-child(3) {
+        width: min(482px, 32vw);
+      }
+
+      .menu-item span,
+      .menu-item i {
+        display: inline-block;
+        font-style: normal;
+      }
+
+      .menu-item i {
+        position: absolute;
+        left: 24px;
+        top: 50%;
+        transform: translate(-12px, -50%);
+        opacity: 0;
+        transition:
+          transform 200ms var(--p5-ease),
+          opacity 180ms var(--p5-ease);
+      }
+
+      .menu-item.in {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .menu-item:hover,
+      .menu-item:focus-visible {
+        background: var(--p5-red);
+        color: var(--p5-white);
+        transform: translateX(0) scale(1.02);
+        box-shadow: 0 0 24px rgba(209, 0, 0, 0.7);
+        outline: none;
+      }
+
+      .subscreen {
+        background: transparent;
+      }
+
+      .subscreen::before {
+        content: none;
+      }
+
+      .card {
+        position: absolute;
+        right: 8%;
+        top: 14%;
+        width: min(760px, 58vw);
+        min-height: 64vh;
+        padding: 34px;
+        background: var(--p5-red);
+        transform: skewX(-9deg) translateX(150%) rotate(8deg);
+        opacity: 0;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6);
+        z-index: 2;
+      }
+
+      .card.in {
+        animation: cardSlam 620ms var(--p5-ease) forwards;
+      }
+      .card > * {
+        transform: skewX(9deg);
+      }
+
+      .sns {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 2px;
+        font-size: 22px;
+      }
+
+      .sns-icon {
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        transition:
+          box-shadow 180ms var(--p5-ease),
+          transform 180ms var(--p5-ease);
+      }
+
+      .sns-icon:hover {
+        box-shadow: 0 0 14px rgba(255, 255, 255, 0.9);
+        transform: scale(1.18);
+      }
+
+      .card h2 {
+        margin: 18px 0 14px;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(64px, 9vw, 140px);
+        line-height: 0.9;
+        letter-spacing: 3px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .rank {
+        position: absolute;
+        right: 6%;
+        top: 12%;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(220px, 32vw, 420px);
+        color: rgba(255, 255, 255, 0.16);
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .link-box {
+        position: relative;
+        display: inline-block;
+        text-decoration: none;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        padding: 12px 18px;
+        font-family: "Rajdhani", sans-serif;
+        font-size: clamp(20px, 2.2vw, 32px);
+        letter-spacing: 0.5px;
+        background: rgba(0, 0, 0, 0.26);
+        transition:
+          transform 180ms var(--p5-ease),
+          background-color 180ms var(--p5-ease),
+          box-shadow 200ms var(--p5-ease);
+        z-index: 2;
+      }
+
+      .link-box:hover {
+        transform: translateY(-2px);
+        background: rgba(0, 0, 0, 0.45);
+        box-shadow: 0 0 26px rgba(209, 0, 0, 0.8);
+        animation: shaky 300ms var(--p5-ease);
+      }
+
+      .story {
+        margin-top: 14px;
+        font-size: clamp(20px, 1.8vw, 30px);
+        line-height: 1.35;
+        max-width: 92%;
+        position: relative;
+        z-index: 2;
+      }
+
+      .petals {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      .petal {
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.85);
+        animation: petalFall 7.5s var(--p5-ease) infinite;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .back-btn {
+        position: absolute;
+        left: 4%;
+        bottom: 8%;
+        z-index: 5;
+        width: max-content;
+        border: none;
+        background: var(--p5-white);
+        color: #000;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(18px, 2vw, 28px);
+        letter-spacing: 2px;
+        padding: 10px 20px 8px 34px;
+        transform: skewX(-12deg) translateX(-120%);
+        opacity: 0;
+        transition:
+          transform 240ms var(--p5-ease),
+          color 200ms var(--p5-ease),
+          background-color 200ms var(--p5-ease),
+          box-shadow 220ms var(--p5-ease);
+      }
+
+      .back-btn span,
+      .back-btn i {
+        display: inline-block;
+        transform: skewX(12deg);
+        font-style: normal;
+      }
+
+      .back-btn i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translate(-10px, -50%) skewX(12deg);
+        opacity: 0;
+        transition:
+          transform 200ms var(--p5-ease),
+          opacity 180ms var(--p5-ease);
+      }
+
+      .back-btn.in {
+        transform: skewX(-12deg) translateX(0);
+        opacity: 1;
+      }
+
+      .proj-stripe {
+        position: absolute;
+        top: 6%;
+        left: -10%;
+        width: 120%;
+        height: 14%;
+        background: linear-gradient(
+          95deg,
+          rgba(209, 0, 0, 0.97),
+          rgba(209, 0, 0, 0.7)
+        );
+        transform: rotate(-6deg);
+        z-index: 2;
+      }
+
+      .proj-title {
+        position: absolute;
+        top: 7%;
+        left: 5%;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(84px, 12vw, 180px);
+        line-height: 0.75;
+        letter-spacing: 2px;
+        z-index: 2;
+        opacity: 0;
+        transform: translateY(-90px) rotate(-4deg);
+        text-shadow: 4px 4px 0 #000;
+      }
+
+      .proj-title b {
+        color: var(--p5-red);
+        font-weight: 400;
+      }
+      .proj-title span {
+        color: var(--p5-white);
+        font-weight: 400;
+      }
+      .proj-title.in {
+        animation: projTitleIn 620ms var(--p5-ease) forwards;
+      }
+
+      .slots {
+        position: absolute;
+        left: 8%;
+        top: 30%;
+        width: min(980px, 84vw);
+        display: grid;
+        gap: 14px;
+        z-index: 3;
+        perspective: 900px;
+      }
+
+      .slot {
+        --stack-y: 0px;
+        --stack-scale: 1;
+        --stack-rot: 0deg;
+        background: rgba(255, 255, 255, 0.96);
+        border-left: 8px solid #000;
+        padding: 14px 18px;
+        display: grid;
+        grid-template-columns: 90px 1fr auto;
+        align-items: center;
+        color: #000;
+        font-size: clamp(18px, 1.7vw, 28px);
+        letter-spacing: 0.5px;
+        transform: translateX(130%) translateY(var(--stack-y))
+          scale(var(--stack-scale)) rotate(var(--stack-rot));
+        transform-origin: left center;
+        opacity: 0;
+        transition:
+          transform 260ms var(--p5-ease),
+          box-shadow 220ms var(--p5-ease),
+          background-color 220ms var(--p5-ease),
+          color 180ms var(--p5-ease),
+          border-color 180ms var(--p5-ease),
+          opacity 200ms var(--p5-ease);
+      }
+
+      .slot.in {
+        opacity: 1;
+        transform: translateX(0) translateY(var(--stack-y))
+          scale(var(--stack-scale)) rotate(var(--stack-rot));
+      }
+
+      .slot .num {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 38px;
+        letter-spacing: 2px;
+      }
+      .slot .name {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 34px;
+        letter-spacing: 2px;
+      }
+      .slot .time {
+        opacity: 0.45;
+        font-size: 18px;
+      }
+
+      .slot.active {
+        background: var(--p5-red);
+        color: #fff;
+        border-left-color: #fff;
+        transform: translateX(0) translateY(var(--stack-y)) translateX(26px)
+          scale(1.05) rotate(-0.5deg);
+        box-shadow:
+          0 14px 34px rgba(209, 0, 0, 0.5),
+          0 2px 10px rgba(0, 0, 0, 0.45);
+      }
+
+      .slot:hover:not(.active) {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      }
+
+      @keyframes logoSlam {
+        0% {
+          opacity: 0;
+          transform: translateX(-100%) translateY(-18%) rotate(-7deg);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0) translateY(0) rotate(-7deg);
+        }
+      }
+
+      @keyframes logoFloat {
+        0%,
+        100% {
+          transform: translateY(-2px);
+        }
+        50% {
+          transform: translateY(2px);
+        }
+      }
+
+      @keyframes cardSlam {
+        0% {
+          transform: skewX(-9deg) translateX(150%) rotate(10deg);
+          opacity: 0;
+        }
+        68% {
+          transform: skewX(-9deg) translateX(-2%) rotate(-1deg);
+          opacity: 1;
+        }
+        100% {
+          transform: skewX(-9deg) translateX(0) rotate(0deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes petalFall {
+        0% {
+          transform: translate(0, -10vh);
+          opacity: 0;
+        }
+        12% {
+          opacity: 0.95;
+        }
+        100% {
+          transform: translate(-30vw, 115vh);
+          opacity: 0;
+        }
+      }
+
+      @keyframes geoRotate {
+        0%,
+        100% {
+          transform: rotate(0deg) scale(1);
+        }
+        50% {
+          transform: rotate(1deg) scale(1.01);
+        }
+      }
+
+      @keyframes projTitleIn {
+        0% {
+          transform: translateY(-90px) rotate(-4deg);
+          opacity: 0;
+        }
+        70% {
+          transform: translateY(8px) rotate(-4deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0) rotate(-4deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes shaky {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-2px);
+        }
+        75% {
+          transform: translateX(2px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <video
+      id="bg-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+    >
+      <source src="bg.mp4" type="video/mp4" />
+    </video>
+
+    <div id="screen-hub" class="screen hub">
+      <div class="hub-overlay"></div>
+
+      <div class="logo" id="hubLogo">
+        <div class="logo-stack">
+          <div class="logo-bar" aria-hidden="true"></div>
+          <span class="about">ABOUT</span>
+          <span class="me">ME</span>
+        </div>
+      </div>
+
+      <div class="hub-menu">
+        <button class="menu-item hoverable" data-go="info">
+          <i>&gt;</i><span>INFO</span>
+        </button>
+        <button class="menu-item hoverable" data-go="projects">
+          <i>&gt;</i><span>PROJECTS</span>
+        </button>
+        <button class="menu-item hoverable" data-go="github">
+          <i>&gt;</i><span>GITHUB</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-github" class="screen subscreen">
+      <div class="petals" id="petalsGithub"></div>
+      <div class="card" id="githubCard">
+        <div class="rank">1</div>
+        <div class="sns">
+          <span class="sns-icon hoverable" aria-hidden="true"></span
+          ><span class="sns-icon hoverable" aria-hidden="true"></span>
+        </div>
+        <h2>GITHUB</h2>
+        <a
+          class="link-box hoverable"
+          href="https://github.com/Wimmboo2?tab=repositories"
+          target="_blank"
+          rel="noreferrer"
+          >github.com/Wimmboo2</a
+        >
+      </div>
+      <button class="back-btn hoverable" data-back="hub">
+        <i>&gt;</i><span>&larr; BACK</span>
+      </button>
+    </div>
+
+    <div id="screen-projects" class="screen subscreen">
+      <div class="proj-stripe"></div>
+      <div class="proj-title" id="projectsTitle">
+        <b>PRO</b><span>JECTS</span>
+      </div>
+      <div class="slots">
+        <div class="slot hoverable">
+          <div class="num">01</div>
+          <div class="name">PROJECT NAME</div>
+          <div class="time">00/00/0000 00:00</div>
+        </div>
+        <div class="slot hoverable">
+          <div class="num">02</div>
+          <div class="name">PROJECT NAME</div>
+          <div class="time">00/00/0000 00:00</div>
+        </div>
+        <div class="slot hoverable">
+          <div class="num">03</div>
+          <div class="name">PROJECT NAME</div>
+          <div class="time">00/00/0000 00:00</div>
+        </div>
+        <div class="slot hoverable">
+          <div class="num">04</div>
+          <div class="name">PROJECT NAME</div>
+          <div class="time">00/00/0000 00:00</div>
+        </div>
+      </div>
+      <button class="back-btn hoverable" data-back="hub">
+        <i>&gt;</i><span>&larr; BACK</span>
+      </button>
+    </div>
+
+    <div id="screen-info" class="screen subscreen">
+      <div class="petals" id="petalsInfo"></div>
+      <div class="card" id="infoCard">
+        <div class="rank">0</div>
+        <div class="sns">
+          <span class="sns-icon hoverable" aria-hidden="true"></span
+          ><span class="sns-icon hoverable" aria-hidden="true"></span>
+        </div>
+        <h2>STORY</h2>
+        <div class="story">
+          [YOUR STORY HERE - replace this text]<br />[YOUR STORY HERE - replace
+          this text]<br />[YOUR STORY HERE - replace this text]<br />[YOUR STORY
+          HERE - replace this text]<br />[YOUR STORY HERE - replace this text]
+        </div>
+      </div>
+      <button class="back-btn hoverable" data-back="hub">
+        <i>&gt;</i><span>&larr; BACK</span>
+      </button>
+    </div>
+
+    <div id="flash"></div>
+    <div id="transitionMask"></div>
+    <div id="cursor"></div>
+
+    <script>
+      const EASE = "cubic-bezier(0.77, 0, 0.18, 1)";
+      const screens = {
+        hub: document.getElementById("screen-hub"),
+        github: document.getElementById("screen-github"),
+        projects: document.getElementById("screen-projects"),
+        info: document.getElementById("screen-info"),
+      };
+
+      const flash = document.getElementById("flash");
+      const transitionMask = document.getElementById("transitionMask");
+      const cursor = document.getElementById("cursor");
+      const menuItems = [...document.querySelectorAll(".menu-item")];
+      const backButtons = [...document.querySelectorAll("[data-back]")];
+      const hubLogo = document.getElementById("hubLogo");
+      const githubCard = document.getElementById("githubCard");
+      const infoCard = document.getElementById("infoCard");
+      const projectsTitle = document.getElementById("projectsTitle");
+      const projectSlots = [...document.querySelectorAll(".slot")];
+      const projectsScreen = document.getElementById("screen-projects");
+      let activeProjectIndex = 0;
+      let wheelLockUntil = 0;
+
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      function setActiveScreen(name) {
+        Object.values(screens).forEach((screen) =>
+          screen.classList.remove("active"),
+        );
+        screens[name].classList.add("active");
+      }
+
+      async function whiteFlash() {
+        flash.style.transition = `opacity 80ms ${EASE}`;
+        flash.style.opacity = "1";
+        await sleep(80);
+        flash.style.opacity = "0";
+        await sleep(90);
+      }
+
+      async function redFlash() {
+        flash.style.background = "#D10000";
+        flash.style.transition = `opacity 90ms ${EASE}`;
+        flash.style.opacity = "1";
+        await sleep(90);
+        flash.style.opacity = "0";
+        await sleep(120);
+        flash.style.background = "#fff";
+      }
+
+      async function maskWipe(direction = "ltr", duration = 400) {
+        transitionMask.style.opacity = "1";
+        transitionMask.style.transition = "none";
+        transitionMask.style.clipPath =
+          direction === "diag-up"
+            ? "polygon(0 100%,20% 100%,0 120%,0 120%)"
+            : "polygon(0 0,0 0,0 100%,0 100%)";
+        await sleep(16);
+        transitionMask.style.transition = `clip-path ${duration}ms ${EASE}`;
+        transitionMask.style.clipPath =
+          direction === "diag-up"
+            ? "polygon(-10% 100%,120% -10%,120% 120%,-10% 120%)"
+            : "polygon(0 0,100% 0,100% 100%,0 100%)";
+        await sleep(duration + 20);
+        transitionMask.style.opacity = "0";
+      }
+
+      addEventListener("mousemove", (event) => {
+        cursor.style.left = `${event.clientX}px`;
+        cursor.style.top = `${event.clientY}px`;
+      });
+
+      document.addEventListener("mouseover", (event) => {
+        if (event.target.closest(".hoverable,button,a")) {
+          cursor.classList.add("hover");
+        }
+      });
+
+      document.addEventListener("mouseout", (event) => {
+        if (event.target.closest(".hoverable,button,a")) {
+          cursor.classList.remove("hover");
+        }
+      });
+
+      function spawnPetals(target, count = 18) {
+        target.innerHTML = "";
+        for (let index = 0; index < count; index += 1) {
+          const petal = document.createElement("div");
+          petal.className = "petal";
+          petal.style.left = `${40 + Math.random() * 70}%`;
+          petal.style.top = `${-10 - Math.random() * 60}px`;
+          petal.style.animationDelay = `${Math.random() * 5}s`;
+          petal.style.animationDuration = `${6 + Math.random() * 4}s`;
+          target.appendChild(petal);
+        }
+      }
+
+      async function enterHub() {
+        setActiveScreen("hub");
+        hubLogo.classList.remove("in");
+        void hubLogo.offsetWidth;
+        hubLogo.classList.add("in");
+        menuItems.forEach((item) => item.classList.remove("in"));
+        for (let index = 0; index < menuItems.length; index += 1) {
+          await sleep(150);
+          menuItems[index].classList.add("in");
+        }
+      }
+
+      async function enterGithub() {
+        setActiveScreen("github");
+        spawnPetals(document.getElementById("petalsGithub"));
+        githubCard.classList.remove("in");
+        void githubCard.offsetWidth;
+        githubCard.classList.add("in");
+        const back = screens.github.querySelector(".back-btn");
+        back.classList.remove("in");
+        await sleep(120);
+        back.classList.add("in");
+      }
+
+      async function enterInfo() {
+        setActiveScreen("info");
+        spawnPetals(document.getElementById("petalsInfo"));
+        infoCard.classList.remove("in");
+        void infoCard.offsetWidth;
+        infoCard.classList.add("in");
+        const back = screens.info.querySelector(".back-btn");
+        back.classList.remove("in");
+        await sleep(120);
+        back.classList.add("in");
+      }
+
+      async function enterProjects() {
+        setActiveScreen("projects");
+        projectsTitle.classList.remove("in");
+        void projectsTitle.offsetWidth;
+        projectsTitle.classList.add("in");
+        projectSlots.forEach((slot) => slot.classList.remove("in"));
+        for (let index = 0; index < projectSlots.length; index += 1) {
+          await sleep(100);
+          projectSlots[index].classList.add("in");
+        }
+        setProjectFocus(activeProjectIndex);
+        const back = screens.projects.querySelector(".back-btn");
+        back.classList.remove("in");
+        await sleep(80);
+        back.classList.add("in");
+      }
+
+      function setProjectFocus(index) {
+        if (!projectSlots.length) return;
+        const count = projectSlots.length;
+        activeProjectIndex = ((index % count) + count) % count;
+        projectSlots.forEach((slot, slotIndex) => {
+          const distance = slotIndex - activeProjectIndex;
+          const absDistance = Math.abs(distance);
+          const rotate =
+            distance === 0 ? -0.5 : Math.max(-4, Math.min(4, distance * 0.8));
+          const scale =
+            distance === 0 ? 1.05 : Math.max(0.9, 1 - absDistance * 0.04);
+          slot.style.setProperty("--stack-y", `${distance * 18}px`);
+          slot.style.setProperty("--stack-scale", `${scale}`);
+          slot.style.setProperty("--stack-rot", `${rotate}deg`);
+          slot.style.zIndex = `${120 - absDistance}`;
+          slot.classList.toggle("active", slotIndex === activeProjectIndex);
+        });
+      }
+
+      function shiftProjectFocus(direction) {
+        if (!projectSlots.length) return;
+        setProjectFocus(activeProjectIndex + direction);
+      }
+
+      async function transitionTo(target, mode = "default") {
+        await whiteFlash();
+
+        if (mode === "tear-ltr") {
+          await maskWipe("ltr", 400);
+        } else if (mode === "diag-up") {
+          await maskWipe("diag-up", 350);
+        } else if (mode === "jagged") {
+          transitionMask.style.opacity = "1";
+          transitionMask.style.clipPath =
+            "polygon(0 42%,18% 40%,25% 45%,36% 39%,48% 44%,58% 41%,69% 46%,80% 43%,89% 48%,100% 44%,100% 100%,0 100%)";
+          transitionMask.style.transition = `clip-path 350ms ${EASE}`;
+          await sleep(16);
+          transitionMask.style.clipPath =
+            "polygon(0 0,100% 0,100% 100%,0 100%)";
+          await sleep(370);
+          transitionMask.style.opacity = "0";
+        }
+
+        if (target === "hub") await enterHub();
+        if (target === "github") await enterGithub();
+        if (target === "projects") await enterProjects();
+        if (target === "info") await enterInfo();
+      }
+
+      async function backToHub() {
+        await redFlash();
+        await maskWipe("diag-up", 350);
+        await enterHub();
+      }
+
+      menuItems.forEach((item) => {
+        item.addEventListener("click", async () => {
+          const go = item.dataset.go;
+          if (go === "github") await transitionTo("github", "diag-up");
+          if (go === "projects") await transitionTo("projects", "jagged");
+          if (go === "info") await transitionTo("info", "diag-up");
+        });
+      });
+
+      backButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          await backToHub();
+        });
+      });
+
+      projectsScreen.addEventListener(
+        "wheel",
+        (event) => {
+          if (!screens.projects.classList.contains("active")) return;
+          event.preventDefault();
+          const now = Date.now();
+          if (now < wheelLockUntil) return;
+          wheelLockUntil = now + 120;
+          shiftProjectFocus(event.deltaY > 0 ? 1 : -1);
+        },
+        { passive: false },
+      );
+
+      projectSlots.forEach((slot, index) => {
+        slot.addEventListener("mouseenter", () => {
+          if (!screens.projects.classList.contains("active")) return;
+          setProjectFocus(index);
+        });
+        slot.addEventListener("click", () => {
+          if (!screens.projects.classList.contains("active")) return;
+          setProjectFocus(index);
+        });
+      });
+
+      function resize() {}
+
+      addEventListener("resize", resize);
+
+      resize();
+      enterHub();
+    </script>
+  </body>
+</html>
