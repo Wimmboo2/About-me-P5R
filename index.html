@@ -13,10 +13,8 @@
     <style>
       :root {
         --p5-red: #d10000;
-        --p5-red-figure: #cc0000;
         --p5-black: #0a0a0a;
         --p5-white: #f0f0f0;
-        --p5-panel: #1a1a1a;
         --p5-ease: cubic-bezier(0.77, 0, 0.18, 1);
       }
 
@@ -74,22 +72,6 @@
         opacity: 1;
         pointer-events: auto;
         transform: scale(1);
-      }
-
-      .bg-black {
-        background: #000;
-      }
-      .bg-red {
-        background: var(--p5-red);
-      }
-
-      #flash {
-        position: fixed;
-        inset: 0;
-        z-index: 150;
-        pointer-events: none;
-        background: #fff;
-        opacity: 0;
       }
 
       #transitionMask {
@@ -727,7 +709,6 @@
       </button>
     </div>
 
-    <div id="flash"></div>
     <div id="transitionMask"></div>
     <div id="cursor"></div>
 
@@ -740,7 +721,6 @@
         info: document.getElementById("screen-info"),
       };
 
-      const flash = document.getElementById("flash");
       const transitionMask = document.getElementById("transitionMask");
       const cursor = document.getElementById("cursor");
       const menuItems = [...document.querySelectorAll(".menu-item")];
@@ -761,24 +741,6 @@
           screen.classList.remove("active"),
         );
         screens[name].classList.add("active");
-      }
-
-      async function whiteFlash() {
-        flash.style.transition = `opacity 80ms ${EASE}`;
-        flash.style.opacity = "1";
-        await sleep(80);
-        flash.style.opacity = "0";
-        await sleep(90);
-      }
-
-      async function redFlash() {
-        flash.style.background = "#D10000";
-        flash.style.transition = `opacity 90ms ${EASE}`;
-        flash.style.opacity = "1";
-        await sleep(90);
-        flash.style.opacity = "0";
-        await sleep(120);
-        flash.style.background = "#fff";
       }
 
       async function maskWipe(direction = "ltr", duration = 400) {
@@ -906,8 +868,6 @@
       }
 
       async function transitionTo(target, mode = "default") {
-        await whiteFlash();
-
         if (mode === "tear-ltr") {
           await maskWipe("ltr", 400);
         } else if (mode === "diag-up") {
@@ -931,7 +891,6 @@
       }
 
       async function backToHub() {
-        await redFlash();
         await maskWipe("diag-up", 350);
         await enterHub();
       }
@@ -975,11 +934,6 @@
         });
       });
 
-      function resize() {}
-
-      addEventListener("resize", resize);
-
-      resize();
       enterHub();
     </script>
   </body>
