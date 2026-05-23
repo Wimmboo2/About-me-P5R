@@ -194,6 +194,9 @@
       .menu-item:nth-child(3) {
         width: min(482px, 32vw);
       }
+      .menu-item:nth-child(4) {
+        width: min(482px, 32vw);
+      }
 
       .menu-item span,
       .menu-item i {
@@ -331,6 +334,27 @@
         max-width: 92%;
         position: relative;
         z-index: 2;
+      }
+
+      .minecraft-images {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 18px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .mc-img {
+        width: 100%;
+        border: 3px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        transition: transform 200ms var(--p5-ease), box-shadow 200ms var(--p5-ease);
+      }
+
+      .mc-img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 12px 32px rgba(209, 0, 0, 0.6);
       }
 
       .petals {
@@ -615,14 +639,6 @@
     <div id="screen-hub" class="screen hub">
       <div class="hub-overlay"></div>
 
-      <div class="logo" id="hubLogo">
-        <div class="logo-stack">
-          <div class="logo-bar" aria-hidden="true"></div>
-          <span class="about">HII</span>
-          <span class="me"></span>
-        </div>
-      </div>
-
       <div class="hub-menu">
         <button class="menu-item hoverable" data-go="info">
           <i>&gt;</i><span>ABOUT ME</span>
@@ -632,6 +648,9 @@
         </button>
         <button class="menu-item hoverable" data-go="github">
           <i>&gt;</i><span>GITHUB</span>
+        </button>
+        <button class="menu-item hoverable" data-go="minecraft">
+          <i>&gt;</i><span>MINECRAFT</span>
         </button>
       </div>
     </div>
@@ -671,6 +690,21 @@
       </button>
     </div>
 
+    <div id="screen-minecraft" class="screen subscreen">
+      <div class="petals" id="petalsMinecraft"></div>
+      <div class="card" id="minecraftCard">
+        <div class="rank">M</div>
+        <h2>MINECRAFT</h2>
+        <div class="minecraft-images">
+          <img src="pvptiers.png" alt="PvP Tiers" class="mc-img hoverable" />
+          <img src="flowpvp.png" alt="Flow PvP" class="mc-img hoverable" />
+        </div>
+      </div>
+      <button class="back-btn hoverable" data-back="hub">
+        <i>&gt;</i><span>&larr; BACK</span>
+      </button>
+    </div>
+
     <div id="screen-info" class="screen subscreen">
       <div class="petals" id="petalsInfo"></div>
       <div class="card" id="infoCard">
@@ -683,9 +717,9 @@
         <div class="info-text">
           HELLO! I'm Wimmboo. I LOVE AI and vibecoding<br>
           I also like playing story games. I used to play competitive game like Valorant but not anymore, I quit.<br>
-          I like Tame Impala and Atlus sound team <br>
-          here's my playlist <a class="link-box hoverable" href="https://music.apple.com/id/playlist/pl.u-WabZvdVHeBN4NX3" target="_blank" style="display: inline-block; padding: 4px 10px; font-size: 18px; margin-left: 8px;">CLICK</a> <br>
+          here's my playlist <a class="link-box hoverable" href="https://open.spotify.com/playlist/112Ve3BXhuGtKRMw3Kn7aQ?si=9a1f06d6758a4203" target="_blank" style="display: inline-block; padding: 4px 10px; font-size: 18px; margin-left: 8px;">CLICK</a> <br>
           and my discord @wimmboo <br>
+          I mostly play persona 5 royal rn. <br>
           idk wht else to say here sooo BYEEEE
         </div>
       </div>
@@ -704,14 +738,16 @@
         github: document.getElementById("screen-github"),
         projects: document.getElementById("screen-projects"),
         info: document.getElementById("screen-info"),
+        minecraft: document.getElementById("screen-minecraft"),
       };
 
       const transitionMask = document.getElementById("transitionMask");
       const cursor = document.getElementById("cursor");
       const menuItems = [...document.querySelectorAll(".menu-item")];
       const backButtons = [...document.querySelectorAll("[data-back]")];
-      const hubLogo = document.getElementById("hubLogo");
+
       const githubCard = document.getElementById("githubCard");
+      const minecraftCard = document.getElementById("minecraftCard");
       const infoCard = document.getElementById("infoCard");
       const projectsTitle = document.getElementById("projectsTitle");
       let projectSlots = [];
@@ -823,9 +859,6 @@
 
       async function enterHub() {
         setActiveScreen("hub");
-        hubLogo.classList.remove("in");
-        void hubLogo.offsetWidth;
-        hubLogo.classList.add("in");
         menuItems.forEach((item) => item.classList.remove("in"));
         for (let index = 0; index < menuItems.length; index += 1) {
           await sleep(150);
@@ -840,6 +873,18 @@
         void githubCard.offsetWidth;
         githubCard.classList.add("in");
         const back = screens.github.querySelector(".back-btn");
+        back.classList.remove("in");
+        await sleep(120);
+        back.classList.add("in");
+      }
+
+      async function enterMinecraft() {
+        setActiveScreen("minecraft");
+        spawnPetals(document.getElementById("petalsMinecraft"));
+        minecraftCard.classList.remove("in");
+        void minecraftCard.offsetWidth;
+        minecraftCard.classList.add("in");
+        const back = screens.minecraft.querySelector(".back-btn");
         back.classList.remove("in");
         await sleep(120);
         back.classList.add("in");
@@ -919,6 +964,7 @@
         if (target === "github") await enterGithub();
         if (target === "projects") await enterProjects();
         if (target === "info") await enterInfo();
+        if (target === "minecraft") await enterMinecraft();
       }
 
       async function backToHub() {
@@ -932,6 +978,7 @@
           if (go === "github") await transitionTo("github", "diag-up");
           if (go === "projects") await transitionTo("projects", "diag-up");
           if (go === "info") await transitionTo("info", "diag-up");
+          if (go === "minecraft") await transitionTo("minecraft", "diag-up");
         });
       });
 
